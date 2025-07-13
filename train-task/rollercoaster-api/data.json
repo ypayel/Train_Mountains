@@ -1,0 +1,12 @@
+[
+    {
+        "id" : 1,
+        "liczba_personelu": 16,
+        "liczba_klientow": 60000,
+        "dl_trasy": 1800,
+        "godziny_od": "8:00",
+        "godziny_do": "16:00",
+        "wagony": []
+    }
+    
+]

@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "express": "^5.1.0",
+    "fs": "^0.0.1-security",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },
@@ -25,5 +27,10 @@
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.35.1",
     "vite": "^7.0.4"
-  }
+  },
+  "description": "This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.",
+  "main": "eslint.config.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
 }
