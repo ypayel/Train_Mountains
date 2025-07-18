@@ -6,7 +6,14 @@
     "dl_trasy": 1800,
     "godziny_od": "09:00",
     "godziny_do": "17:00",
-    "wagony": []
+    "wagony": [
+      {
+        "id": 2,
+        "ilosc_miejsc": 15,
+        "predkosc_wagonu": 1.1,
+        "lastRunEndTime": "2025-07-18T10:11:28.906Z"
+      }
+    ]
   },
   {
     "id": 2,
@@ -19,7 +26,8 @@
       {
         "id": 1,
         "ilosc_miejsc": 20,
-        "predkosc_wagonu": 1
+        "predkosc_wagonu": 1,
+        "lastRunEndTime": null
       }
     ]
   }
