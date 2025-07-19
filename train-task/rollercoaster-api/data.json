@@ -6,6 +6,8 @@
     "dl_trasy": 1800,
     "godziny_od": "09:00",
     "godziny_do": "17:00",
+    "nazwa": "Star Coaster",
+    "czy_online": true,
     "wagony": [
       {
         "id": 2,
@@ -22,6 +24,8 @@
     "dl_trasy": 1500,
     "godziny_od": "10:00",
     "godziny_do": "18:00",
+    "nazwa": "Flash Coaster",
+    "czy_online": false,
     "wagony": [
       {
         "id": 1,

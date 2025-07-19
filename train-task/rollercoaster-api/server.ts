@@ -2,6 +2,7 @@ import express, { Request, Response } from "express";
 import fs from "fs";
 import path from "path";
 import redis from "./redisClient";
+import { json } from "stream/consumers";
 
 const app = express();
 app.use(express.json());
@@ -27,6 +28,8 @@ interface Kolejka {
   godziny_od: string;
   godziny_do: string;
   wagony: Wagon[];
+  czy_online: boolean;
+  nazwa: string;
 }
 
 const canRunWagon = (
@@ -92,6 +95,8 @@ app.post("/api/coasters", (req: Request, res: Response) => {
     godziny_od,
     godziny_do,
     wagony: [],
+    czy_online: false,
+    nazwa: "",
   };
 
   dane.push(nowaKolejka);
@@ -206,10 +211,10 @@ app.get("/api/prod/coasters", async (req: Request, res: Response) => {
 });
 
 //Zarządzanie kolejkami i wagonami
-app.post("/api/coasters/:coasterId/wagons/:wagonId/run",
+app.post(
+  "/api/coasters/:coasterId/wagons/:wagonId/run",
   (req: Request, res: Response) => {
     try {
-      
       const dane: Kolejka[] = JSON.parse(fs.readFileSync(DATA_FILE, "utf-8"));
 
       const coasterId = parseInt(req.params.coasterId);
@@ -241,6 +246,133 @@ app.post("/api/coasters/:coasterId/wagons/:wagonId/run",
     }
   }
 );
+
+//Zarządzanie personelem
+app.get("/api/coasters/staff-status", (req: Request, res: Response) => {
+  try {
+    const dane: Kolejka[] = JSON.parse(fs.readFileSync(DATA_FILE, "utf-8"));
+
+    const stats = dane.map((kolejka) => {
+      const wymaganyPersonel = 1 + kolejka.wagony.length * 2;
+      const roznica = kolejka.liczba_personelu - wymaganyPersonel;
+
+      let status: string;
+      if (roznica === 0) {
+        status = "Liczba personelu jest odpowiednia.";
+      } else if (roznica > 0) {
+        status = `Za duzo personelu. Nadmiar: ${roznica}.`;
+      } else {
+        status = `Brakuje personelu. Niedobor: ${Math.abs(roznica)}`;
+      }
+
+      return {
+        kolejkaId: kolejka.id,
+        wymaganyPersonel,
+        dostepnyPersonel: kolejka.liczba_personelu,
+        status,
+      };
+    });
+
+    res.json(stats);
+  } catch (error: any) {
+    console.error("Blad podczas sprawdzania personelu:", error);
+    res.status(500).json({ error: "Wewnętrzny błąd serwera" });
+  }
+});
+
+//Zarządzanie klientami
+app.get("/api/coasters/klients-status", (req: Request, res: Response) => {
+  try {
+    const dane: Kolejka[] = JSON.parse(fs.readFileSync(DATA_FILE, "utf-8"));
+
+    const stats = dane.map((kolejka) => {
+      const godzinaOd = parseInt(kolejka.godziny_od.split(":")[0], 10);
+      const minutaOd = parseInt(kolejka.godziny_od.split(":")[1], 10);
+      const godzinaDo = parseInt(kolejka.godziny_do.split(":")[0], 10);
+      const minutaDo = parseInt(kolejka.godziny_do.split(":")[1], 10);
+
+      const czasPracyMinuty =
+        godzinaDo * 60 + minutaDo - (godzinaOd * 60 - minutaOd);
+
+      let maksKlientow = 0;
+
+      for (const wagon of kolejka.wagony) {
+        const czasPrzejazdu = kolejka.dl_trasy / wagon.predkosc_wagonu;
+        const iloscPrzejazdow = Math.floor(
+          (czasPracyMinuty * 60) / czasPrzejazdu
+        );
+        maksKlientow += iloscPrzejazdow * wagon.ilosc_miejsc;
+      }
+
+      const wymaganyPersonel = 1 + kolejka.wagony.length * 2;
+
+      let status: string;
+      if (maksKlientow < kolejka.liczba_klientow) {
+        const niedoborKlientow = kolejka.liczba_klientow - maksKlientow;
+        status = `Nie da się obsłużyć wszystkich klientów. Brakuje ${niedoborKlientow}`;
+      } else if (maksKlientow >= 2 * kolejka.liczba_klientow) {
+        const nadmiarKlientow = maksKlientow - 2 * kolejka.liczba_klientow;
+        status = `Za dużo mocy przerobowej. Nadmiarowe miejsca: ${nadmiarKlientow}, nadmiarowy personel: ${
+          kolejka.liczba_personelu - wymaganyPersonel
+        }`;
+      } else {
+        status = `Liczba klientów możliwa do obsłużenia: ${maksKlientow}. Wszystko OK.`;
+      }
+
+      return {
+        kolejkaId: kolejka.id,
+        liczbaKlientow: kolejka.liczba_klientow,
+        maksKlientow,
+        status,
+      };
+    });
+    res.json(stats);
+  } catch (error: any) {
+    console.error("Blad podczas sprawdzania klientow:", error);
+    res.status(500).json({ error: "Wewnętrzny błąd serwera" });
+  }
+});
+
+//Rozproszony system zarządzania
+app.get("/api/coasters/autonomous-system", (req: Request, res: Response) => {
+  try {
+    const dane: Kolejka[] = JSON.parse(fs.readFileSync(DATA_FILE, "utf-8"));
+    const onlineCoasters = dane.filter((kolejka) => kolejka.czy_online);
+
+    if (onlineCoasters.length === 0) {
+      return res.json({
+        message:
+          "Brak kolejek podłączonych do sieci. Wszystkie działają autonomicznie.",
+      });
+    }
+
+     if (onlineCoasters.length === 1) {
+      return res.json({
+        message: "Tylko jedna kolejka podłączona do systemu. Działa autonomicznie.",
+        node: onlineCoasters[0].id,
+      });
+     }
+
+     const centralNode = onlineCoasters.reduce((min, current) =>
+      current.id < min.id ? current : min
+    );
+
+     const synchronizacja = onlineCoasters.map(k => ({
+      id: k.id,
+      status: k.id === centralNode.id ? "Centralny węzeł" : `Zsynchronizowano z węzłem ${centralNode.id}`,
+    }));
+
+    res.json({
+      message: `Węzeł centralny to kolejka ${centralNode.id}`,
+      centralNode: centralNode.id,
+      synchronizacja,
+    });
+    
+  } catch (error: any) {
+    console.error("Blad syatemu:", error);
+    res.status(500).json({ error: "Wewnętrzny błąd serwera" });
+  }
+});
 
 const PORT = 3000;
 app.listen(PORT, () => {
