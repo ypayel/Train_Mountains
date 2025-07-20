@@ -6,7 +6,7 @@
     "dl_trasy": 1800,
     "godziny_od": "09:00",
     "godziny_do": "17:00",
-    "nazwa": "Star Coaster",
+    "nazwa": "Kolejka A",
     "czy_online": true,
     "wagony": [
       {
@@ -24,7 +24,7 @@
     "dl_trasy": 1500,
     "godziny_od": "10:00",
     "godziny_do": "18:00",
-    "nazwa": "Flash Coaster",
+    "nazwa": "Kolejka B",
     "czy_online": false,
     "wagony": [
       {
@@ -32,6 +32,24 @@
         "ilosc_miejsc": 20,
         "predkosc_wagonu": 1,
         "lastRunEndTime": null
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "liczba_personelu": 12,
+    "liczba_klientow": 45,
+    "dl_trasy": 1200,
+    "godziny_od": "06:00",
+    "godziny_do": "15:00",
+    "nazwa": "Kolejka C",
+    "czy_online": true,
+    "wagony": [
+      {
+        "id": 3,
+        "ilosc_miejsc": 25,
+        "predkosc_wagonu": 1.4,
+        "lastRunEndTime": "2025-07-18T10:11:28.906Z"
       }
     ]
   }

@@ -3,6 +3,7 @@ import fs from "fs";
 import path from "path";
 import redis from "./redisClient";
 import { json } from "stream/consumers";
+import { syncChangeAsync } from "./syncService";
 
 const app = express();
 app.use(express.json());
@@ -163,27 +164,35 @@ app.delete(
   }
 );
 
-//Zmiana kolejki
-app.put("/api/coasters/:coasterId", (req: Request, res: Response) => {
-  const coasterId = parseInt(req.params.coasterId);
-  const { liczba_klientow, liczba_personelu, godziny_do, godziny_od } =
-    req.body;
+//Zmiana kolejki + Synchronizacja dannych
+app.put("/api/coasters/:coasterId", (req: Request, res: Response): void => {
+  try {
+    const coasterId = parseInt(req.params.coasterId);
+    const updatedData = req.body;
 
-  const dane: Kolejka[] = JSON.parse(fs.readFileSync(DATA_FILE, "utf-8"));
-  const kolejka = dane.find((k) => k.id === coasterId);
+    const dane: Kolejka[] = JSON.parse(fs.readFileSync(DATA_FILE, "utf-8"));
+    const index = dane.findIndex((k) => k.id === coasterId);
 
-  if (!kolejka) {
-    return res.status(404).json({ error: "Kolejka nie istnieje" });
+    if (index === -1) {
+      res.status(404).json({ error: "Nie znaleziono kolejki" });
+      return;
+    }
+
+    dane[index] = { ...dane[index], ...updatedData };
+    fs.writeFileSync(DATA_FILE, JSON.stringify(dane, null, 2), "utf-8");
+
+    // Asynchroniczna synchronizacja zmian z innymi węzłami
+    syncChangeAsync({
+      typ: "UPDATE_COASTER",
+      id: coasterId,
+      zmiany: updatedData,
+    });
+
+    res.json({ message: "Zmieniono dane kolejki (synchronizacja w tle)" });
+  } catch (err) {
+    console.error("Błąd przy aktualizacji kolejki:", err);
+    res.status(500).json({ error: "Wewnętrzny błąd serwera" });
   }
-
-  if (liczba_klientow !== undefined) kolejka.liczba_klientow = liczba_klientow;
-  if (liczba_personelu !== undefined)
-    kolejka.liczba_personelu = liczba_personelu;
-  if (godziny_do !== undefined) kolejka.godziny_do = godziny_do;
-  if (godziny_od !== undefined) kolejka.godziny_od = godziny_od;
-
-  fs.writeFileSync(DATA_FILE, JSON.stringify(dane, null, 2));
-  res.json({ message: "Kolejka została zaktualizowana", kolejka });
 });
 
 //Redis
@@ -210,7 +219,7 @@ app.get("/api/prod/coasters", async (req: Request, res: Response) => {
   }
 });
 
-//Zarządzanie kolejkami i wagonami
+//Zarządzanie kolejkami i wagonami 
 app.post(
   "/api/coasters/:coasterId/wagons/:wagonId/run",
   (req: Request, res: Response) => {
@@ -373,6 +382,10 @@ app.get("/api/coasters/autonomous-system", (req: Request, res: Response) => {
     res.status(500).json({ error: "Wewnętrzny błąd serwera" });
   }
 });
+
+
+//Synchronizacja dannych
+
 
 const PORT = 3000;
 app.listen(PORT, () => {
