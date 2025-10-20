@@ -1,69 +1,78 @@
-# React + TypeScript + Vite
+# 🌐 Train Mountains
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+---
 
-Currently, two official plugins are available:
+## 🧭 Project Overview
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Roller Coaster Queue Management API is a backend system written in TypeScript, designed to manage roller coasters, wagons, staff, and clients.
+The system provides a RESTful API with Redis integration to ensure high performance, scalability, and real-time monitoring.
+It simulates a dynamic amusement park environment, handling queue logic, ride operations, and data synchronization efficiently.
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## 🧱 Technologies Used
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- **TypeScript**
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+- **Node.js / Express.js**
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- **Redis**
+
+- **JSON-based data storage**
+
+- **ES Modules (ES6+)**
+
+- **Git / GitHub**
+
+---
+
+## 📱 Features
+
+- Roller Coaster Management – create, edit, and delete coaster data
+
+- Wagon Registration – add and manage wagons assigned to coasters
+
+- Staff & Client Handling – simulate park staff operations and client queues
+
+- Queue Simulation – manage waiting times, ride order, and passenger flow
+
+- Redis Cache – optimize response time and reduce redundant data processing
+
+- Real-time Monitoring – view live queue status and ride activity
+
+- Error Handling & Validation – robust input checking and safe data updates
+
+---
+
+⚙️ Installation and Local Development
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/ypayel/Train_Mountains
+
+# 2. Enter the project directory
+cd train-task
+
+# 3. Install dependencies
+npm install
+
+# 4. Start the development server
+npm run dev
+
+# 5. API will be available at
+http://localhost:3000
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+---
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+👤 Author
 
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+Artsiom Kukankou
+
+🌐 Live Site - https://my-website-omega-three.vercel.app/
+
+💻 GitHub - https://github.com/ypayel
+
+🧠 Frontend Developer (React + TypeScript + SCSS)
+
+📍 Based in Poland
